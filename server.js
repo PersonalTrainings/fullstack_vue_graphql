@@ -16,10 +16,10 @@ const Post = require('./models/Post');
 // Connect to MLab Database
 
 // Local URI
-const MONGO_URI = 'mongodb://localhost:27017/fullstack-vue-graphql';
+// const MONGO_URI = 'mongodb://localhost:27017/fullstack-vue-graphql';
 mongoose
   .connect(
-    MONGO_URI,
+    process.env.MONGO_URI,
     { useNewUrlParser: true, useCreateIndex: true }
   )
   .then(() => console.log('Connected to MongoLab instance.'))
