@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 import router from './router';
 
 import { defaultClient as apolloClient } from './main';
-import { GET_POSTS, SIGNIN_USER, GET_CURRENT_USER } from './queries';
+import { GET_POSTS, ADD_POST, SIGNIN_USER, SIGNUP_USER, GET_CURRENT_USER } from './queries';
 
 Vue.use(Vuex);
 
@@ -11,7 +11,9 @@ export default new Vuex.Store({
   state: {
     posts: [],
     user: null,
-    loading: false
+    loading: false,
+    authError: null,
+    error: null
   },
   mutations: {
     setPosts: (state, payload) => {
@@ -23,7 +25,14 @@ export default new Vuex.Store({
     setLoading: (state, payload) => {
       state.loading = payload;
     },
-    clearUser: (state) => (state.user = null)
+    setAuthError: (state, payload) => {
+      state.authError = payload;
+    },
+    setError: (state, payload) => {
+      state.error = payload;
+    },
+    clearUser: (state) => (state.user = null),
+    clearError: (state) => (state.error = null)
   },
   actions: {
     getCurrentUser: ({ commit }) => {
@@ -35,6 +44,7 @@ export default new Vuex.Store({
         .then(({ data }) => {
           commit('setLoading', false);
           // Add user data to state
+          console.log('CURRENT_USER: ', data.getCurrentUser);
           commit('setUser', data.getCurrentUser);
         })
         .catch((err) => {
@@ -57,19 +67,82 @@ export default new Vuex.Store({
           console.error('error: ', err);
         });
     },
+    signupUser: ({ commit }, payload) => {
+      commit('clearError');
+      commit('setLoading', true);
+      return apolloClient
+        .mutate({
+          mutation: SIGNUP_USER,
+          variables: payload
+        })
+        .then(({ data }) => {
+          commit('setLoading', false);
+          localStorage.setItem('token', data.signupUser.token);
+          // to make sure created method is run in main.js (we run getCurrentUser), reload the page
+          router.go();
+        })
+        .catch((err) => {
+          commit('setLoading', false);
+          commit('setError', err);
+          console.error('error: ', err);
+        });
+    },
+    addPost: ({ commit }, payload) => {
+      commit('setLoading', true);
+      return apolloClient
+        .mutate({
+          mutation: ADD_POST,
+          variables: payload,
+          update: (cache, { data: { addPost } }) => {
+            // First read the query you want to update
+            const data = cache.readQuery({ query: GET_POSTS });
+
+            // Create updated data
+            data.getPosts.unshift(addPost);
+
+            // Write updated data back to query
+            cache.writeQuery({
+              query: GET_POSTS,
+              data
+            });
+          },
+          // optimistic response ensures data is added immediately as we specified for the update function
+          optimisticResponse: {
+            __typename: 'Mutation',
+            addPost: {
+              __typename: 'Post',
+              _id: -1,
+              ...payload
+            }
+          }
+        })
+        .then(({ data }) => {
+          commit('setLoading', false);
+          router.push('/');
+          console.log('NEW_POST:', data.addPost);
+        })
+        .catch((err) => {
+          commit('setLoading', false);
+          console.error('error: ', err);
+        });
+    },
     signinUser: ({ commit }, payload) => {
-      localStorage.setItem('token', '');
+      commit('clearError');
+      commit('setLoading', true);
       return apolloClient
         .mutate({
           mutation: SIGNIN_USER,
           variables: payload
         })
         .then(({ data }) => {
+          commit('setLoading', false);
           localStorage.setItem('token', data.signinUser.token);
           // to make sure created method is run in main.js (we run getCurrentUser), reload the page
           router.go();
         })
         .catch((err) => {
+          commit('setLoading', false);
+          commit('setError', err);
           console.error('error: ', err);
         });
     },
@@ -85,6 +158,8 @@ export default new Vuex.Store({
   getters: {
     posts: (state) => state.posts,
     loading: (state) => state.loading,
-    user: (state) => state.user
+    user: (state) => state.user,
+    error: (state) => state.error,
+    authError: (state) => state.authError
   }
 });

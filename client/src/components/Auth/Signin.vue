@@ -3,7 +3,14 @@
     <!-- Signin Title -->
     <v-layout row wrap>
       <v-flex xs12 sm6 offset-sm3>
-        <h1>Welocme back</h1>
+        <h1>Welocme Back!</h1>
+      </v-flex>
+    </v-layout>
+
+    <!-- Error Alert -->
+    <v-layout v-if="error" row wrap>
+      <v-flex xs12 sm6 offset-sm3>
+        <form-alert :message="error.message"></form-alert>
       </v-flex>
     </v-layout>
 
@@ -12,10 +19,16 @@
       <v-flex xs12 sm6 offset-sm3>
         <v-card color="secondary" dark>
           <v-container grid-list-xs>
-            <v-form @submit.prevent="handleSigninUser">
+            <v-form
+              v-model="isFormValid"
+              lazy-validation
+              ref="form"
+              @submit.prevent="handleSigninUser"
+            >
               <v-layout row>
                 <v-flex sm12>
                   <v-text-field
+                    :rules="usernameRules"
                     v-model="username"
                     prepend-icon="face"
                     label="Username"
@@ -28,6 +41,7 @@
               <v-layout row>
                 <v-flex sm12>
                   <v-text-field
+                    :rules="passwordRules"
                     v-model="password"
                     prepend-icon="extension"
                     label="Password"
@@ -39,7 +53,17 @@
 
               <v-layout row>
                 <v-flex sm12>
-                  <v-btn color="accent" type="submit">Signin</v-btn>
+                  <v-btn
+                    :loading="loading"
+                    :disabled="!isFormValid || loading"
+                    color="accent"
+                    type="submit"
+                  >
+                    Signin
+                    <span slot="loader" class="custom-loader">
+                      <v-icon light>cached</v-icon>
+                    </span>
+                  </v-btn>
                   <h3>Don't have an account?
                     <router-link to="/signup">Signup</router-link>
                   </h3>
@@ -60,12 +84,23 @@ export default {
   name: "Signin",
   data() {
     return {
+      isFormValid: true,
       username: "",
-      password: ""
+      password: "",
+      usernameRules: [
+        username => !!username || "Username is required",
+        username =>
+          username.length < 10 || "Username must be less than 10 characters"
+      ],
+      passwordRules: [
+        password => !!password || "Password is required",
+        password =>
+          password.length >= 6 || "Password must be at least 6 characters"
+      ]
     };
   },
   computed: {
-    ...mapGetters(["user"])
+    ...mapGetters(["user", "error", "loading"])
   },
   watch: {
     user(newValue) {
@@ -78,11 +113,52 @@ export default {
   methods: {
     ...mapActions(["signinUser"]),
     handleSigninUser() {
-      this.signinUser({
-        username: this.username,
-        password: this.password
-      });
+      if (this.$refs.form.validate()) {
+        this.signinUser({
+          username: this.username,
+          password: this.password
+        });
+      }
     }
   }
 };
 </script>
+
+<style>
+.custom-loader {
+  animation: loader 1s infinite;
+  display: flex;
+}
+@-moz-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-webkit-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@-o-keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loader {
+  from {
+    transform: rotate(0);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+</style>
