@@ -25,11 +25,23 @@
           </v-layout>
 
           <v-layout row>
-            <v-flex sm12 mb-2>
-              <upload-form :onFilePicked="onFilePicked"/>
+            <v-flex sm12>
+              <v-text-field
+                :rules="imageRules"
+                v-model="imageUrl"
+                label="Image URL"
+                type="text"
+                required
+              ></v-text-field>
             </v-flex>
           </v-layout>
 
+          <!-- Image Drager -->
+          <!-- <v-layout row>
+            <v-flex sm12 mb-2>
+              <upload-form :onFilePicked="onFilePicked"/>
+            </v-flex>
+          </v-layout>-->
           <!-- Image Preview -->
           <v-layout v-if="imageUrl" row>
             <v-flex sm12 class="image-wrap">
