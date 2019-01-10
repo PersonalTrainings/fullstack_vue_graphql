@@ -24,23 +24,17 @@
             </v-flex>
           </v-layout>
 
-          <!-- Image Url Input -->
           <v-layout row>
-            <v-flex sm12>
-              <v-text-field
-                :rules="imageRules"
-                v-model="imageUrl"
-                label="Image URL"
-                type="text"
-                required
-              ></v-text-field>
+            <v-flex sm12 mb-2>
+              <upload-form :onFilePicked="onFilePicked"/>
             </v-flex>
           </v-layout>
 
           <!-- Image Preview -->
           <v-layout v-if="imageUrl" row>
-            <v-flex sm12>
+            <v-flex sm12 class="image-wrap">
               <img :src="imageUrl" height="300px">
+              <span class="close-icon" @click="clearImage">&#x2715;</span>
             </v-flex>
           </v-layout>
 
@@ -93,6 +87,7 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import UploadForm from "../Shared/UploadForm";
 
 export default {
   name: "AddPost",
@@ -100,6 +95,7 @@ export default {
     return {
       isFormValid: true,
       title: "",
+      imageName: "",
       imageUrl: "",
       categories: [],
       description: "",
@@ -107,7 +103,7 @@ export default {
         title => !!title || "Title is required",
         title => title.length < 20 || "Title must have less than 20 characters"
       ],
-      imageRules: [image => !!image || "Image URL is required"],
+      imageRules: [image => !!image || this.imageUrl || "Image is required"],
       categoriesRules: [
         categories =>
           categories.length >= 1 || "At least one category is required"
@@ -125,6 +121,7 @@ export default {
       return [
         "Art",
         "Food",
+        "Game",
         "Furniture",
         "Education",
         "Travel",
@@ -135,6 +132,26 @@ export default {
   },
   methods: {
     ...mapActions(["addPost"]),
+    clearImage() {
+      this.imageName = "";
+      this.imageUrl = "";
+    },
+    onFilePicked(files) {
+      if (files[0] !== undefined) {
+        this.imageName = files[0].name;
+        if (this.imageName.lastIndexOf(".") <= 0) {
+          return;
+        }
+        const fr = new FileReader();
+        fr.readAsDataURL(files[0]);
+        fr.addEventListener("load", () => {
+          this.imageUrl = fr.result;
+        });
+      } else {
+        this.imageName = "";
+        this.imageUrl = "";
+      }
+    },
     handleAddPost() {
       if (this.$refs.form.validate()) {
         this.addPost({
@@ -146,6 +163,28 @@ export default {
         });
       }
     }
+  },
+  components: {
+    "upload-form": UploadForm
   }
 };
 </script>
+
+<style>
+.image-wrap {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+.close-icon {
+  position: absolute;
+  align-self: flex-start;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+.close-icon:hover {
+  color: red;
+}
+</style>
+
