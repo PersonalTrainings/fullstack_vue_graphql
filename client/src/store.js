@@ -46,6 +46,7 @@ export default new Vuex.Store({
           // Add user data to state
           console.log('CURRENT_USER: ', data.getCurrentUser);
           commit('setUser', data.getCurrentUser);
+          return data.getCurrentUser;
         })
         .catch((err) => {
           commit('setLoading', false);

@@ -4,7 +4,7 @@
     <v-layout row wrap v-if="infiniteScrollPosts">
       <v-flex xs12 sm6 v-for="post in infiniteScrollPosts.posts" :key="post._id">
         <v-card hover>
-          <v-card-media height="30vh" :src="post.imageUrl" lazy></v-card-media>
+          <v-card-media @click.native="goToPost(post._id)" height="30vh" :src="post.imageUrl" lazy></v-card-media>
 
           <v-card-actions>
             <v-card-title primary>
@@ -14,7 +14,7 @@
               </div>
             </v-card-title>
             <v-spacer></v-spacer>
-            <v-btn @click="showPostCreator = !showPostCreator" icon>
+            <v-btn @click.stop="showPostCreator = !showPostCreator" icon>
               <v-icon>{{`keyboard_arrow_${showPostCreator ? 'up' : 'down'}`}}</v-icon>
             </v-btn>
           </v-card-actions>
@@ -29,7 +29,7 @@
 
                 <v-list-tile-content>
                   <v-list-tile-title class="text--primary">{{ post.createdBy.username }}</v-list-tile-title>
-                  <v-list-tile-subtitle class="font-weight-thin">Added {{ post.createdDate }}</v-list-tile-subtitle>
+                  <v-list-tile-sub-title class="font-weight-thin">Added {{ post.createdDate }}</v-list-tile-sub-title>
                 </v-list-tile-content>
 
                 <v-list-tile-action>
@@ -75,13 +75,13 @@ export default {
       variables: {
         pageNum: 1,
         pageSize
-      },
-      result(args) {
-        console.dir(args);
       }
     }
   },
   methods: {
+    goToPost(postId) {
+      this.$router.push(`/posts/${postId}`);
+    },
     showMorePosts() {
       this.pageNum += 1;
 

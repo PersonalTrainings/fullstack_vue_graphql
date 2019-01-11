@@ -63,6 +63,15 @@ new Vue({
   render: (h) => h(App),
   created() {
     // execute getCurrentUser query
-    this.$store.dispatch('getCurrentUser');
+    this.$store.dispatch('getCurrentUser').then((currentUser) => {
+      const authRedirectPath = localStorage.getItem('setAuthRedirectPath');
+      if (currentUser && authRedirectPath) {
+        this.$router.push(authRedirectPath);
+        localStorage.removeItem('setAuthRedirectPath');
+      }
+      if (!currentUser) {
+        this.$router.push('/signin');
+      }
+    });
   }
 }).$mount('#app');
