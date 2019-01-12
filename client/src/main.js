@@ -65,11 +65,13 @@ new Vue({
     // execute getCurrentUser query
     this.$store.dispatch('getCurrentUser').then((currentUser) => {
       const authRedirectPath = localStorage.getItem('setAuthRedirectPath');
+      const { routes } = this.$router.options;
+      const isProtectRoute = routes.filter((r) => r.beforeEnter).some((r) => r.path === window.location.pathname);
+
       if (currentUser && authRedirectPath) {
         this.$router.push(authRedirectPath);
         localStorage.removeItem('setAuthRedirectPath');
-      }
-      if (!currentUser) {
+      } else if (!currentUser && isProtectRoute) {
         this.$router.push('/signin');
       }
     });

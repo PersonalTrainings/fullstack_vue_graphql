@@ -55,6 +55,10 @@ export default new Router({
       path: '/Signup',
       name: 'Signup',
       component: Signup
+    },
+    {
+      path: '*',
+      redirect: '/'
     }
   ]
 });
