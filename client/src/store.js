@@ -3,13 +3,14 @@ import Vuex from 'vuex';
 import router from './router';
 
 import { defaultClient as apolloClient } from './main';
-import { GET_POSTS, ADD_POST, SIGNIN_USER, SIGNUP_USER, GET_CURRENT_USER } from './queries';
+import { GET_POSTS, SEARCH_POSTS, ADD_POST, SIGNIN_USER, SIGNUP_USER, GET_CURRENT_USER } from './queries';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     posts: [],
+    searchResults: [],
     user: null,
     loading: false,
     authError: null,
@@ -18,6 +19,11 @@ export default new Vuex.Store({
   mutations: {
     setPosts: (state, payload) => {
       state.posts = payload;
+    },
+    setSearchResults: (state, payload) => {
+      if (payload !== null) {
+        state.searchResults = payload;
+      }
     },
     setUser: (state, payload) => {
       state.user = payload;
@@ -31,6 +37,7 @@ export default new Vuex.Store({
     setError: (state, payload) => {
       state.error = payload;
     },
+    clearSearchResults: (state) => (state.searchResults = []),
     clearUser: (state) => (state.user = null),
     clearError: (state) => (state.error = null)
   },
@@ -65,6 +72,21 @@ export default new Vuex.Store({
         })
         .catch((err) => {
           commit('setLoading', false);
+          console.error('error: ', err);
+        });
+    },
+    searchPosts: ({ commit }, payload) => {
+      return apolloClient
+        .query({
+          query: SEARCH_POSTS,
+          variables: {
+            searchTerm: payload
+          }
+        })
+        .then(({ data }) => {
+          commit('setSearchResults', data.searchPosts);
+        })
+        .catch((err) => {
           console.error('error: ', err);
         });
     },
@@ -158,8 +180,10 @@ export default new Vuex.Store({
   },
   getters: {
     posts: (state) => state.posts,
+    searchResults: (state) => state.searchResults,
     loading: (state) => state.loading,
     user: (state) => state.user,
+    userFavorites: (state) => state.user && state.user.favorites,
     error: (state) => state.error,
     authError: (state) => state.authError
   }

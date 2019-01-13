@@ -62,6 +62,18 @@ export const INFINITE_SCROLL_POSTS = gql`
   }
 `;
 
+export const SEARCH_POSTS = gql`
+  query($searchTerm: String) {
+    searchPosts(searchTerm: $searchTerm) {
+      _id
+      title
+      description
+      imageUrl
+      likes
+    }
+  }
+`;
+
 // Posts Mutations
 export const ADD_POST = gql`
   mutation($title: String!, $imageUrl: String!, $categories: [String]!, $description: String!, $creatorId: ID!) {
@@ -95,6 +107,33 @@ export const ADD_POST_MESSAGE = gql`
     }
   }
 `;
+
+export const LIKE_POST = gql`
+  mutation($postId: ID!, $username: String!) {
+    likePost(postId: $postId, username: $username) {
+      likes
+      favorites {
+        _id
+        title
+        imageUrl
+      }
+    }
+  }
+`;
+
+export const UNLIKE_POST = gql`
+  mutation($postId: ID!, $username: String!) {
+    unlikePost(postId: $postId, username: $username) {
+      likes
+      favorites {
+        _id
+        title
+        imageUrl
+      }
+    }
+  }
+`;
+
 // User Queries
 export const GET_CURRENT_USER = gql`
   query {

@@ -6,8 +6,8 @@
         <v-card hover>
           <v-card-title>
             <h1>{{ getPost.title}}</h1>
-            <v-btn large icon v-if="user">
-              <v-icon large color="grey">favorite</v-icon>
+            <v-btn @click="handleToggleLike" large icon v-if="user">
+              <v-icon large :color="checkIfPostLiked(getPost._id) ? 'red' : 'grey'">favorite</v-icon>
             </v-btn>
             <h3 class="ml-3 font-weight-thin">{{ getPost.likes }} LIKES</h3>
             <v-spacer></v-spacer>
@@ -101,14 +101,20 @@
 </template>
 
 <script>
-import { mapGetters } from "vuex";
-import { GET_POST, ADD_POST_MESSAGE } from "../../queries";
+import { mapGetters, mapMutations } from "vuex";
+import {
+  GET_POST,
+  ADD_POST_MESSAGE,
+  LIKE_POST,
+  UNLIKE_POST
+} from "../../queries";
 
 export default {
   name: "Post",
   props: ["postId"],
   data() {
     return {
+      postLiked: false,
       dialog: false,
       messageBody: "",
       isFormValid: true,
@@ -121,9 +127,67 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["loading", "user"])
+    ...mapGetters(["loading", "user", "userFavorites"])
   },
   methods: {
+    ...mapMutations(["setUser"]),
+    checkIfPostLiked(postId) {
+      if (
+        this.userFavorites &&
+        this.userFavorites.some(p => p._id === postId)
+      ) {
+        this.postLiked = true;
+        return true;
+      } else {
+        this.postLiked = false;
+        return false;
+      }
+    },
+    handleToggleLike() {
+      const variables = {
+        postId: this.postId,
+        username: this.user.username
+      };
+      this.$apollo
+        .mutate({
+          mutation: this.postLiked ? UNLIKE_POST : LIKE_POST,
+          variables,
+          update: (cache, { data: { likePost = {}, unlikePost = {} } }) => {
+            const data = cache.readQuery({
+              query: GET_POST,
+              variables: {
+                postId: this.postId
+              }
+            });
+
+            if (this.postLiked) {
+              data.getPost.likes -= 1;
+            } else {
+              data.getPost.likes += 1;
+            }
+
+            cache.writeQuery({
+              query: GET_POST,
+              variables: {
+                postId: this.postId
+              },
+              data
+            });
+          }
+        })
+        .then(({ data }) => {
+          const updatedUser = {
+            ...this.user,
+            favorites: this.postLiked
+              ? data.unlikePost.favorites
+              : data.likePost.favorites
+          };
+          this.setUser(updatedUser);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
     handleAddPostMessage() {
       if (this.$refs.form.validate()) {
         const variables = {
