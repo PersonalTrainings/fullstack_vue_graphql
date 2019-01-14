@@ -20,6 +20,7 @@
         </v-flex>
       </template>
     </ApolloQuery>-->
+    <!-- Loading Spinner -->
     <v-layout row>
       <v-dialog v-model="loading" fullscreen persistent>
         <v-container fill-height>
@@ -30,6 +31,14 @@
       </v-dialog>
     </v-layout>
 
+    <!-- Explore Posts Button -->
+    <v-layout class="mt-2 mb-3" row wrap v-if="!loading">
+      <v-flex xs12>
+        <v-btn class="secondary" to="/posts" large dark>Explore Posts</v-btn>
+      </v-flex>
+    </v-layout>
+
+    <!-- Post Carousel -->
     <v-flex xs12>
       <v-carousel v-if="!loading && posts.length > 0" v-bind="{ 'cycle': true }" interval="3000">
         <v-carousel-item
@@ -82,6 +91,7 @@ export default {
 <style>
 #carousel__title {
   position: absolute;
+  cursor: pointer;
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   border-radius: 5px 5px 0 0;

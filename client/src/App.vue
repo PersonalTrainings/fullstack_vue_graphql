@@ -48,6 +48,8 @@
         color="accent"
         single-line
         hide-details
+        clearable
+        @click:clear="() => { clearSearchResults(); searchTerm = ''}"
         v-model="searchTerm"
         @input="() => searchPosts(searchTerm)"
       ></v-text-field>
@@ -212,6 +214,14 @@ export default {
 </script>
 
 <style>
+h1 {
+  font-weight: 400;
+  font-size: 2.5rem;
+}
+h2 {
+  font-weight: 400;
+  font-size: 2rem;
+}
 .fade-enter-active,
 .fade-leave-active {
   transition-property: all;

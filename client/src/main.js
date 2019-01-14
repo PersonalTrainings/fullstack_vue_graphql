@@ -3,15 +3,20 @@ import Vue from 'vue';
 import './plugins/vuetify';
 import App from './App.vue';
 import router from './router';
-import store from './store';
+import store from './store/store';
 
 import ApolloClient from 'apollo-boost';
 import VueApollo from 'vue-apollo';
+import moment from 'moment';
 
 import FormAlert from './components/Shared/FormAlert';
 
 // Register Global Component
 Vue.component('form-alert', FormAlert);
+
+// Add Global Filter to format date
+Vue.filter('formatDate', (date) => moment(new Date(date)).format('ll'));
+Vue.filter('getTimeFromNow', (time) => moment(new Date(time)).fromNow());
 
 Vue.use(VueApollo);
 

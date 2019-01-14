@@ -29,7 +29,9 @@
 
                 <v-list-tile-content>
                   <v-list-tile-title class="text--primary">{{ post.createdBy.username }}</v-list-tile-title>
-                  <v-list-tile-sub-title class="font-weight-thin">Added {{ post.createdDate }}</v-list-tile-sub-title>
+                  <v-list-tile-sub-title
+                    class="font-weight-thin"
+                  >Added {{ post.createdDate | formatDate }}</v-list-tile-sub-title>
                 </v-list-tile-content>
 
                 <v-list-tile-action>
@@ -45,7 +47,7 @@
     </v-layout>
 
     <!-- Fetch More Button -->
-    <v-layout column>
+    <v-layout v-if="showMoreEnabled" column>
       <v-flex xs12>
         <v-layout justify-center row>
           <v-btn color="info" @click="showMorePosts">Fetch More</v-btn>
@@ -65,7 +67,6 @@ export default {
   data() {
     return {
       pageNum: 1,
-      showMoreEnabled: true,
       showPostCreator: false
     };
   },
@@ -76,6 +77,11 @@ export default {
         pageNum: 1,
         pageSize
       }
+    }
+  },
+  computed: {
+    showMoreEnabled() {
+      return this.infiniteScrollPosts && this.infiniteScrollPosts.hasMore;
     }
   },
   methods: {
@@ -93,7 +99,6 @@ export default {
         updateQuery: (prevResult, { fetchMoreResult }) => {
           const newPosts = fetchMoreResult.infiniteScrollPosts.posts;
           const hasMore = fetchMoreResult.infiniteScrollPosts.hasMore;
-          this.showMoreEnabled = hasMore;
 
           return {
             infiniteScrollPosts: {

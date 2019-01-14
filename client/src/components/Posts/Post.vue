@@ -84,8 +84,12 @@
 
                 <v-list-tile-content>
                   <v-list-tile-title>{{ message.messageBody }}</v-list-tile-title>
-                  <v-list-tile-sub-title>{{ message.messageUser.username }}</v-list-tile-sub-title>
-                  <span class="grey--text text--lighten-1" hidden-xs-only>{{ message.messageDate }}</span>
+                  <v-list-tile-sub-title>
+                    {{ message.messageUser.username }}
+                    <span
+                      class="grey--text text--lighten-1 hidden-xs-only"
+                    >{{ message.messageDate | getTimeFromNow }}</span>
+                  </v-list-tile-sub-title>
                 </v-list-tile-content>
 
                 <v-list-tile-action class="hidden-xs-only">
